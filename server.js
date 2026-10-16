@@ -7,7 +7,7 @@ const salas = {};
 app.post('/crear_sala', (req, res) => {
     const { codigo, puerto, ip_host } = req.body;
     
-    // Si el juego nos manda su IP explícitamente, la usamos; si no, intentamos la del proxy
+    // PRIORIZAMOS la IP de Tailscale o la que mande Godot explícitamente en el body
     let ipHost = ip_host || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     
     if (ipHost && ipHost.includes(',')) {
@@ -26,7 +26,7 @@ app.post('/crear_sala', (req, res) => {
         port: puerto || 8910
     };
 
-    console.log(`Sala creada: [${codigo}] con IP real del host: ${ipHost}:${puerto}`);
+    console.log(`Sala creada: [${codigo}] con IP guardada: ${ipHost}:${puerto}`);
     res.json({ success: true, mensaje: "Sala registrada correctamente" });
 });
 
