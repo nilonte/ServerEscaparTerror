@@ -5,10 +5,10 @@ app.use(express.json());
 const salas = {};
 
 app.post('/crear_sala', (req, res) => {
-    const { codigo, puerto, ip_host } = req.body;
+    const { codigo, puerto } = req.body;
     
-    // PRIORIZAMOS la IP de Tailscale o la que mande Godot explícitamente en el body
-    let ipHost = ip_host || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    // Obtenemos automáticamente tu IP pública real a través de la petición que llega a Render
+    let ipHost = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     
     if (ipHost && ipHost.includes(',')) {
         ipHost = ipHost.split(',')[0].trim();
@@ -17,16 +17,18 @@ app.post('/crear_sala', (req, res) => {
         ipHost = ipHost.replace('::ffff:', '');
     }
 
+    const puertoLimpio = parseInt(puerto, 10) || 8910;
+
     if (!codigo) {
         return res.status(400).json({ error: "Falta el código de sala" });
     }
 
     salas[codigo] = {
         ip: ipHost,
-        port: puerto || 8910
+        port: puertoLimpio
     };
 
-    console.log(`Sala creada: [${codigo}] con IP guardada: ${ipHost}:${puerto}`);
+    console.log(`Sala creada: [${codigo}] con IP pública guardada: ${ipHost}:${puertoLimpio}`);
     res.json({ success: true, mensaje: "Sala registrada correctamente" });
 });
 
